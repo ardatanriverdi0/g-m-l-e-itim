@@ -128,6 +128,12 @@ export class UIManager {
             document.getElementById('telYaw').innerText = (stats.telemetry.yaw || 0).toFixed(1);
             document.getElementById('telGForce').innerText = (stats.telemetry.gforce || 1.0).toFixed(2);
             document.getElementById('telAirtime').innerText = (stats.telemetry.airTime || 0).toFixed(1);
+
+            // IMU #2
+            if(stats.telemetry.p2 !== undefined) {
+                document.getElementById('telPitch2').innerText = stats.telemetry.p2.toFixed(1);
+                document.getElementById('telRoll2').innerText = stats.telemetry.r2.toFixed(1);
+            }
         }
 
         // Ability Icons

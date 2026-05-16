@@ -244,7 +244,9 @@ export class Game {
                         roll: this.inputManager.roll,
                         yaw: this.inputManager.yaw || 0,
                         gforce: this.inputManager.gforce || 1.0,
-                        airTime: this.jetSki.airTime
+                        airTime: this.jetSki.airTime,
+                        p2: this.inputManager.pitch2,
+                        r2: this.inputManager.roll2
                     }
                 });
             }
