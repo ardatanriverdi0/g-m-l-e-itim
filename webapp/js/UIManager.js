@@ -129,6 +129,20 @@ export class UIManager {
             document.getElementById('telGForce').innerText = (stats.telemetry.gforce || 1.0).toFixed(2);
             document.getElementById('telAirtime').innerText = (stats.telemetry.airTime || 0).toFixed(1);
         }
+
+        // Ability Icons
+        if(stats.cooldowns) {
+            this.updateIcon('iconTurbo', stats.cooldowns.TURBO);
+            this.updateIcon('iconMissile', stats.cooldowns.MISSILE);
+            this.updateIcon('iconFlip', stats.cooldowns.BACKFLIP);
+        }
+    }
+
+    updateIcon(id, cd) {
+        const el = document.getElementById(id);
+        if(!el) return;
+        if(cd > 0) el.classList.add('cooldown');
+        else el.classList.remove('cooldown');
     }
 
     showTrickText(text) {

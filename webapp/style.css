@@ -204,3 +204,31 @@ input[type="text"] {
     color: #fff;
     margin-right: 10px;
 }
+
+.hud-abilities {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+}
+.ability-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(0,0,0,0.6);
+    border: 2px solid #00d2ff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    color: #fff;
+    opacity: 1;
+    transition: opacity 0.3s;
+    pointer-events: auto;
+}
+.ability-icon.cooldown {
+    opacity: 0.3;
+    border-color: #555;
+}

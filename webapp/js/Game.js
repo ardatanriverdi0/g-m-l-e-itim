@@ -1,5 +1,6 @@
 import { JetSki } from './JetSki.js';
 import { Environment } from './Environment.js';
+import { Missile } from './entities/Missile.js';
 
 export class Game {
     constructor(progression, inputManager, uiManagerCallback) {
@@ -16,8 +17,14 @@ export class Game {
         this.combo = 1;
         this.comboTimer = 0;
 
+        // Ability Cooldowns
+        this.cooldowns = { TURBO: 0, BACKFLIP: 0, MISSILE: 0, SHIELD: 0 };
+
         // Three.js Setup
         this.scene = new THREE.Scene();
+
+        // Bind Gesture Listener
+        this.inputManager.onGesture = (type) => this.handleGesture(type);
         this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 20000);
         this.camera.position.set(0, 3, 10);
 
@@ -103,13 +110,81 @@ export class Game {
         }
     }
 
+    handleGesture(type) {
+        if (!this.isPlaying || this.isPaused) return;
+        if (this.cooldowns[type] > 0) return;
+
+        switch (type) {
+            case 'TURBO':
+                if (this.jetSki.activateTurbo()) {
+                    this.cooldowns.TURBO = 600; // 10s
+                    if(this.updateUICallback) this.updateUICallback.showTrick("TURBO BOOST!");
+                }
+                break;
+            case 'BACKFLIP':
+                if (this.jetSki.triggerAutoFlip()) {
+                    this.cooldowns.BACKFLIP = 300; // 5s
+                    if(this.updateUICallback) this.updateUICallback.showTrick("AUTO BACKFLIP!");
+                }
+                break;
+            case 'MISSILE':
+                this.launchMissiles();
+                this.cooldowns.MISSILE = 600; // 10s
+                if(this.updateUICallback) this.updateUICallback.showTrick("MISSILES LAUNCHED!");
+                break;
+        }
+    }
+
+    launchMissiles() {
+        const leftPos = this.jetSki.group.position.clone().add(new THREE.Vector3(-0.5, 0.5, -1));
+        const rightPos = this.jetSki.group.position.clone().add(new THREE.Vector3(0.5, 0.5, -1));
+        
+        // Find target
+        let target = null;
+        let minDist = 50;
+        for(let obj of this.environment.objects) {
+            if(obj.userData.type === 'obstacle' && obj.position.z < this.jetSki.group.position.z) {
+                let d = obj.position.distanceTo(this.jetSki.group.position);
+                if(d < minDist) { minDist = d; target = obj; }
+            }
+        }
+
+        this.jetSki.missiles.push(new Missile(this.scene, leftPos, target));
+        this.jetSki.missiles.push(new Missile(this.scene, rightPos, target));
+    }
+
     animate() {
         requestAnimationFrame(this.animate);
-
-        this.inputManager.update(); // Update keyboard/imu
+        this.inputManager.update(); 
 
         if (this.isPlaying && !this.isPaused) {
-            
+            // Cooldowns
+            for(let k in this.cooldowns) { if(this.cooldowns[k] > 0) this.cooldowns[k]--; }
+
+            // Update Missiles
+            for (let i = this.jetSki.missiles.length - 1; i >= 0; i--) {
+                let m = this.jetSki.missiles[i];
+                m.update();
+
+                // Check collision with obstacles
+                for (let j = this.environment.objects.length - 1; j >= 0; j--) {
+                    let obj = this.environment.objects[j];
+                    if (obj.userData.type === 'obstacle' && m.group.position.distanceTo(obj.position) < 2.0) {
+                        this.scene.remove(obj);
+                        this.environment.objects.splice(j, 1);
+                        m.alive = false;
+                        this.score += 200;
+                        if(this.updateUICallback) this.updateUICallback.showTrick("BOOM!");
+                        break;
+                    }
+                }
+
+                if (!m.alive) {
+                    m.destroy();
+                    this.jetSki.missiles.splice(i, 1);
+                }
+            }
+
             // Combo Decay
             if(this.combo > 1) {
                 this.comboTimer--;
@@ -162,7 +237,15 @@ export class Game {
                     speed: this.jetSki.currentSpeed,
                     hp: this.jetSki.hp,
                     fuel: this.jetSki.fuel,
-                    combo: this.combo
+                    combo: this.combo,
+                    cooldowns: this.cooldowns,
+                    telemetry: {
+                        pitch: this.inputManager.pitch,
+                        roll: this.inputManager.roll,
+                        yaw: this.inputManager.yaw || 0,
+                        gforce: this.inputManager.gforce || 1.0,
+                        airTime: this.jetSki.airTime
+                    }
                 });
             }
         } else {

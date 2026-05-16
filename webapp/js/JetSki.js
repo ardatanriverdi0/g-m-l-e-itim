@@ -23,6 +23,12 @@ export class JetSki {
         this.totalRotationY = 0;
         this.airTime = 0;
 
+        // Ability States
+        this.turboTime = 0;
+        this.autoFlipTime = 0;
+        this.missiles = [];
+        this.missileCooldown = 0;
+
         // Visuals
         this.group = new THREE.Group();
         this.buildModel();
@@ -95,6 +101,23 @@ export class JetSki {
         this.acceleration = 0.01 * this.progression.data.upgrades.accel;
     }
 
+    activateTurbo() {
+        if (this.turboTime <= 0) {
+            this.turboTime = 300; // 5 seconds @ 60fps
+            return true;
+        }
+        return false;
+    }
+
+    triggerAutoFlip() {
+        if (!this.isAirborne && this.autoFlipTime <= 0) {
+            this.jump(0.8);
+            this.autoFlipTime = 60; // Flag to force rotation
+            return true;
+        }
+        return false;
+    }
+
     createWake() {
         if (this.isAirborne) return; // No wake in air
         const particle = new THREE.Mesh(this.particleGeo, this.particleMat);
@@ -123,9 +146,24 @@ export class JetSki {
     update(inputManager, isPlaying) {
         if (!isPlaying) return;
 
+        // Turbo Effect
+        if (this.turboTime > 0) {
+            this.turboTime--;
+            this.currentSpeed += 0.05; // Force boost
+            if (this.currentSpeed > this.maxSpeed * 2) this.currentSpeed = this.maxSpeed * 2;
+            if (Math.random() > 0.5) this.createWake(); // Extra bubbles for turbo
+        }
+
+        // Auto Flip Logic
+        if (this.autoFlipTime > 0) {
+            this.autoFlipTime--;
+            this.group.rotation.x -= 0.15;
+            this.totalRotationX -= 0.15;
+        }
+
         // FUEL consumption
-        this.fuel -= 0.01;
-        if(this.fuel <= 0) this.fuel = 0; // Handled in Game.js for game over
+        this.fuel -= (this.turboTime > 0 ? 0.03 : 0.01);
+        if(this.fuel <= 0) this.fuel = 0;
 
         // Movement based on inputs
         let targetX = -inputManager.roll * 15;
@@ -135,10 +173,10 @@ export class JetSki {
         this.group.position.x += (targetX - this.group.position.x) * 0.1;
 
         // Speed mapping based on pitch
-        // Lean back (positive pitch) -> Boost, lean forward -> brake
         let speedTarget = this.baseSpeed + (inputManager.pitch * 1.0);
         if(speedTarget < 0.2) speedTarget = 0.2;
-        if(speedTarget > this.maxSpeed) speedTarget = this.maxSpeed;
+        if (this.turboTime > 0) speedTarget = this.maxSpeed * 1.8;
+        else if(speedTarget > this.maxSpeed) speedTarget = this.maxSpeed;
 
         this.currentSpeed += (speedTarget - this.currentSpeed) * this.acceleration;
 
@@ -152,21 +190,22 @@ export class JetSki {
             this.velocity.y -= this.gravity;
 
             // Flip / Roll / Spin using Angular Velocity
-            if (Math.abs(inputManager.pitchVelocity) > 0.05) {
-                let rotX = inputManager.pitchVelocity * -0.5;
-                this.group.rotation.x += rotX;
-                this.totalRotationX += rotX;
-            }
-            if (Math.abs(inputManager.rollVelocity) > 0.05) {
-                let rotZ = inputManager.rollVelocity * 0.5;
-                this.group.rotation.z += rotZ;
-                this.totalRotationZ += rotZ;
-            }
-            // Yaw is in degrees per frame roughly, so scale it to radians
-            if (Math.abs(inputManager.yawVelocity) > 2.0) {
-                let rotY = inputManager.yawVelocity * -0.05;
-                this.group.rotation.y += rotY;
-                this.totalRotationY += rotY;
+            if (this.autoFlipTime <= 0) {
+                if (Math.abs(inputManager.pitchVelocity) > 0.05) {
+                    let rotX = inputManager.pitchVelocity * -0.5;
+                    this.group.rotation.x += rotX;
+                    this.totalRotationX += rotX;
+                }
+                if (Math.abs(inputManager.rollVelocity) > 0.05) {
+                    let rotZ = inputManager.rollVelocity * 0.5;
+                    this.group.rotation.z += rotZ;
+                    this.totalRotationZ += rotZ;
+                }
+                if (Math.abs(inputManager.yawVelocity) > 2.0) {
+                    let rotY = inputManager.yawVelocity * -0.05;
+                    this.group.rotation.y += rotY;
+                    this.totalRotationY += rotY;
+                }
             }
 
             if (this.group.position.y <= 0) {
