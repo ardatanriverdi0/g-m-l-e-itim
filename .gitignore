@@ -1,0 +1,7 @@
+.pio/
+.vscode/
+node_modules/
+*.o
+*.elf
+*.hex
+*.bin

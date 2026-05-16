@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jet Ski Simulator Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/Water.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/Sky.js"></script>
+</head>
+<body>
+    <!-- 3D Canvas Container -->
+    <div id="game-canvas"></div>
+
+    <!-- UI LAYER -->
+    <div id="ui-layer">
+        
+        <!-- LOGIN SCREEN -->
+        <div id="login-screen" class="screen active">
+            <div class="panel">
+                <h1>JET SKI SIMULATOR</h1>
+                <p>Enter your racer name to start</p>
+                <input type="text" id="usernameInput" placeholder="Racer Name" autocomplete="off" />
+                <button id="loginBtn" class="btn primary">Login & Play</button>
+            </div>
+        </div>
+
+        <!-- MAIN MENU -->
+        <div id="main-menu" class="screen">
+            <div class="panel">
+                <h2>Welcome, <span id="playerNameDisplay">Racer</span>!</h2>
+                <div class="stats-box">
+                    <p>Level: <span id="playerLevel">1</span></p>
+                    <p>XP: <span id="playerXP">0</span> / <span id="playerNextXP">1000</span></p>
+                    <p>Coins: <span id="playerCoins">0</span></p>
+                </div>
+                <button id="btnConnectIMU" class="btn warning">Connect Arduino (IMU)</button>
+                <p id="imuStatus" class="status-text">IMU: Disconnected (Use Arrow Keys)</p>
+                <button id="btnStartGame" class="btn primary">Start Game</button>
+                <button id="btnGarage" class="btn secondary">Garage & Upgrades</button>
+            </div>
+        </div>
+
+        <!-- GARAGE SCREEN -->
+        <div id="garage-screen" class="screen">
+            <div class="panel">
+                <h2>Garage</h2>
+                <p>Coins: <span id="garageCoins">0</span></p>
+                <div class="upgrade-row">
+                    <span>Speed (Lvl <span id="lvlSpeed">1</span>)</span>
+                    <button id="upgSpeed" class="btn small">Upgrade (100c)</button>
+                </div>
+                <div class="upgrade-row">
+                    <span>Acceleration (Lvl <span id="lvlAccel">1</span>)</span>
+                    <button id="upgAccel" class="btn small">Upgrade (100c)</button>
+                </div>
+                <button id="btnBackToMenu" class="btn secondary">Back to Menu</button>
+            </div>
+        </div>
+
+        <!-- HUD (IN-GAME) -->
+        <div id="hud-screen" class="screen">
+            <!-- Telemetry Panel -->
+            <div id="telemetry-panel">
+                <div class="telemetry-title">IMU TELEMETRY</div>
+                <div>Pitch: <span id="telPitch">0.0</span>°</div>
+                <div>Roll: <span id="telRoll">0.0</span>°</div>
+                <div>Yaw: <span id="telYaw">0.0</span>°</div>
+                <div>G-Force: <span id="telGForce">1.0</span> G</div>
+                <div>Airtime: <span id="telAirtime">0.0</span> s</div>
+            </div>
+
+            <div class="hud-top-left">
+                <div class="score-display">Score: <span id="hudScore">0</span></div>
+                <div class="combo-display" id="hudCombo" style="display:none;">Combo x<span id="comboMultiplier">1</span>!</div>
+            </div>
+            
+            <div class="hud-top-right">
+                <div class="coin-display">🪙 <span id="hudCoins">0</span></div>
+                <button id="btnPause" class="btn small warning">|| Pause</button>
+            </div>
+
+            <div class="hud-bottom-left">
+                <div class="bar-container">
+                    <span class="bar-label">HP</span>
+                    <div class="bar-bg"><div id="hpBar" class="bar-fill hp-fill"></div></div>
+                </div>
+                <div class="bar-container">
+                    <span class="bar-label">FUEL</span>
+                    <div class="bar-bg"><div id="fuelBar" class="bar-fill fuel-fill"></div></div>
+                </div>
+            </div>
+
+            <div class="hud-bottom-right speedometer">
+                <span id="speedValue">0</span> km/h
+            </div>
+            
+            <div id="trickDisplay" class="trick-text"></div>
+        </div>
+
+        <!-- PAUSE / GAME OVER -->
+        <div id="pause-screen" class="screen">
+            <div class="panel">
+                <h2 id="pauseTitle">Game Paused</h2>
+                <p>Score: <span id="pauseScore">0</span></p>
+                <button id="btnResume" class="btn primary">Resume</button>
+                <button id="btnQuit" class="btn danger">Quit to Menu</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MAIN SCRIPT (Module) -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #000;
+    font-family: 'Roboto', sans-serif;
+    user-select: none;
+}
+
+#game-canvas {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 1;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 10;
+    pointer-events: none; /* Let clicks pass through to canvas if needed */
+}
+
+/* Screens */
+.screen {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: none;
+    pointer-events: auto;
+}
+.screen.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Panels */
+.panel {
+    background: rgba(10, 20, 30, 0.85);
+    border: 2px solid #00d2ff;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+    text-align: center;
+    color: white;
+    min-width: 300px;
+    backdrop-filter: blur(8px);
+}
+
+h1, h2 {
+    font-family: 'Orbitron', sans-serif;
+    color: #00d2ff;
+    margin-top: 0;
+}
+
+/* Buttons */
+.btn {
+    font-family: 'Orbitron', sans-serif;
+    padding: 12px 24px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.btn.primary { background: #00d2ff; color: #000; }
+.btn.primary:hover { background: #00a0cc; box-shadow: 0 0 15px #00d2ff; }
+.btn.secondary { background: #333; color: #fff; border: 1px solid #555; }
+.btn.secondary:hover { background: #444; }
+.btn.warning { background: #ffaa00; color: #000; }
+.btn.warning:hover { background: #cc8800; }
+.btn.danger { background: #ff3333; color: #fff; }
+.btn.danger:hover { background: #cc0000; }
+.btn.small { padding: 6px 12px; font-size: 0.9rem; width: auto; margin: 0 5px; }
+
+input[type="text"] {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #00d2ff;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+/* Stats Box */
+.stats-box {
+    background: rgba(0,0,0,0.5);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+.stats-box p { margin: 5px 0; color: #ccc; }
+.stats-box span { color: #fff; font-weight: bold; }
+
+/* Garage */
+.upgrade-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.4);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+/* HUD elements */
+#hud-screen { display: none; pointer-events: none; }
+#hud-screen.active { display: block; }
+#hud-screen > * { pointer-events: auto; }
+
+.hud-top-left { position: absolute; top: 20px; left: 20px; }
+.score-display {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    color: #fff;
+    text-shadow: 2px 2px 4px #000;
+}
+.combo-display {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: #ffaa00;
+    text-shadow: 2px 2px 4px #000;
+    animation: pulse 0.5s infinite alternate;
+}
+
+.hud-top-right { position: absolute; top: 20px; right: 20px; text-align: right; }
+.coin-display {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: #FFD700;
+    text-shadow: 2px 2px 4px #000;
+    margin-bottom: 10px;
+}
+
+.hud-bottom-left { position: absolute; bottom: 30px; left: 20px; width: 250px; }
+.bar-container { display: flex; align-items: center; margin-bottom: 10px; }
+.bar-label {
+    font-family: 'Orbitron', sans-serif; color: #fff; font-weight: bold;
+    width: 50px; text-shadow: 1px 1px 2px #000;
+}
+.bar-bg { flex-grow: 1; height: 15px; background: rgba(0,0,0,0.6); border: 1px solid #555; border-radius: 8px; overflow: hidden; }
+.bar-fill { height: 100%; width: 100%; transition: width 0.2s linear; }
+.hp-fill { background: linear-gradient(90deg, #ff0000, #ff5555); }
+.fuel-fill { background: linear-gradient(90deg, #00d2ff, #0088ff); }
+
+.hud-bottom-right { position: absolute; bottom: 30px; right: 20px; }
+.speedometer {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    color: #00d2ff;
+    text-shadow: 0 0 10px #00d2ff, 2px 2px 4px #000;
+    text-align: right;
+}
+.speedometer span { font-size: 4rem; font-weight: bold; }
+
+.trick-text {
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    color: #ffaa00;
+    text-shadow: 0 0 20px #ff0000;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.status-text { font-size: 0.9rem; color: #aaa; margin: 5px 0 15px 0; }
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+#telemetry-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 50, 0, 0.7);
+    border: 1px solid #00ff00;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: #00ff00;
+    font-family: 'Orbitron', monospace;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 15px;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    backdrop-filter: blur(5px);
+}
+
+.telemetry-title {
+    font-weight: bold;
+    color: #fff;
+    margin-right: 10px;
+}
